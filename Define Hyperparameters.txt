@@ -1,0 +1,97 @@
+
+def run_experiment_for_gamma():
+    print('Running Experiment for gamma...')
+    env = gym.make('LunarLander-v2')
+
+    # set seeds
+    env.seed(21)
+    np.random.seed(21)
+
+    # setting up params
+    lr = 0.001
+    epsilon = 1.0
+    epsilon_decay = 0.995
+    gamma_list = [0.99, 0.9, 0.8, 0.7]
+    training_episodes = 1000
+
+    rewards_list_for_gammas = []
+    for gamma_value in gamma_list:
+        # save_dir = "hp_gamma_"+ str(gamma_value) + "_"
+        model = DQN(env, lr, gamma_value, epsilon, epsilon_decay)
+        print("Training model for Gamma: {}".format(gamma_value))
+        model.train(training_episodes, False)
+        rewards_list_for_gammas.append(model.rewards_list)
+
+    pickle.dump(rewards_list_for_gammas, open("rewards_list_for_gammas.p", "wb"))
+    rewards_list_for_gammas = pickle.load(open("rewards_list_for_gammas.p", "rb"))
+
+    gamma_rewards_pd = pd.DataFrame(index=pd.Series(range(1, training_episodes + 1)))
+    for i in range(len(gamma_list)):
+        col_name = "gamma=" + str(gamma_list[i])
+        gamma_rewards_pd[col_name] = rewards_list_for_gammas[i]
+    plot_experiments(gamma_rewards_pd, "Figure 4: Rewards per episode for different gamma values",
+                     "Figure 4: Rewards per episode for different gamma values", "Episodes", "Reward", (-600, 300))
+
+
+def run_experiment_for_lr():
+    print('Running Experiment for learning rate...')
+    env = gym.make('LunarLander-v2')
+
+    # set seeds
+    env.seed(21)
+    np.random.seed(21)
+
+    # setting up params
+    lr_values = [0.0001, 0.001, 0.01, 0.1]
+    epsilon = 1.0
+    epsilon_decay = 0.995
+    gamma = 0.99
+    training_episodes = 1000
+    rewards_list_for_lrs = []
+    for lr_value in lr_values:
+        model = DQN(env, lr_value, gamma, epsilon, epsilon_decay)
+        print("Training model for LR: {}".format(lr_value))
+        model.train(training_episodes, False)
+        rewards_list_for_lrs.append(model.rewards_list)
+
+    pickle.dump(rewards_list_for_lrs, open("rewards_list_for_lrs.p", "wb"))
+    rewards_list_for_lrs = pickle.load(open("rewards_list_for_lrs.p", "rb"))
+
+    lr_rewards_pd = pd.DataFrame(index=pd.Series(range(1, training_episodes + 1)))
+    for i in range(len(lr_values)):
+        col_name = "lr="+ str(lr_values[i])
+        lr_rewards_pd[col_name] = rewards_list_for_lrs[i]
+    plot_experiments(lr_rewards_pd, "Figure 3: Rewards per episode for different learning rates", "Figure 3: Rewards per episode for different learning rates", "Episodes", "Reward", (-2000, 300))
+
+
+def run_experiment_for_ed():
+    print('Running Experiment for epsilon decay...')
+    env = gym.make('LunarLander-v2')
+
+    # set seeds
+    env.seed(21)
+    np.random.seed(21)
+
+    # setting up params
+    lr = 0.001
+    epsilon = 1.0
+    ed_values = [0.999, 0.995, 0.990, 0.9]
+    gamma = 0.99
+    training_episodes = 1000
+
+    rewards_list_for_ed = []
+    for ed in ed_values:
+        save_dir = "hp_ed_"+ str(ed) + "_"
+        model = DQN(env, lr, gamma, epsilon, ed)
+        print("Training model for ED: {}".format(ed))
+        model.train(training_episodes, False)
+        rewards_list_for_ed.append(model.rewards_list)
+
+    pickle.dump(rewards_list_for_ed, open("rewards_list_for_ed.p", "wb"))
+    rewards_list_for_ed = pickle.load(open("rewards_list_for_ed.p", "rb"))
+
+    ed_rewards_pd = pd.DataFrame(index=pd.Series(range(1, training_episodes+1)))
+    for i in range(len(ed_values)):
+        col_name = "epsilon_decay = "+ str(ed_values[i])
+        ed_rewards_pd[col_name] = rewards_list_for_ed[i]
+    plot_experiments(ed_rewards_pd, "Figure 5: Rewards per episode for different epsilon(ε) decay", "Figure 5: Rewards per episode for different epsilon(ε) decay values", "Episodes", "Reward", (-600, 300))
